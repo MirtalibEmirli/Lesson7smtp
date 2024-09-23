@@ -1,0 +1,36 @@
+﻿<Window x:Class="Mailing.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Mailing"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="650" Width="1100">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0">
+            <Button Background="CadetBlue" Margin="5" Height="50" Content="Inbox" Name="InBox" Click="InBox_Click" />
+            <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Sent" Name="Sent" Click="Sent_Click" />
+            <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Deleted" Name="Delete" Click="Delete_Click" />
+            <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Starred" Name="Starred" Click="Starred_Click" />
+             
+        </StackPanel>
+
+
+        <ListView Grid.Column="1">
+            
+        </ListView>
+
+        <StackPanel Grid.Column="2">
+            <Label Content="Mail"/>
+            <TextBox x:Name="mail" Height="50"/>
+            <Label Content="Message"/>
+            <TextBox AcceptsReturn="True" TextWrapping="Wrap" x:Name="message" Height="448"/>
+            <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Send" Name="Send" Click="Send_Click"   />
+        </StackPanel>
+    </Grid>
+</Window>
