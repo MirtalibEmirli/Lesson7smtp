@@ -1,16 +1,14 @@
-﻿using System.Net;
+﻿using Mailing.Models;
+using MailKit;
+using MailKit.Net.Imap;
+using MailKit.Search;
+using System.Collections.ObjectModel;
+using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+ 
 
 namespace Mailing;
 
@@ -25,10 +23,12 @@ public partial class MainWindow : Window
     string? recipientEmail;
     string smtpServer = "smtp.gmail.com";
     int smptPort = 587;
+    public ObservableCollection<EmailDto> Emails { get; set; } = new ObservableCollection<EmailDto>();
+
     public MainWindow()
     {
         InitializeComponent();
-
+        DataContext = this;
     }
 
     private async void Delete_Click(object sender, RoutedEventArgs e)
@@ -51,16 +51,31 @@ public partial class MainWindow : Window
     private void InBox_Click(object sender, RoutedEventArgs e)
     {
 
+         
+
     }
 
-    private void Send_Click(object sender, RoutedEventArgs e)
+    private async void Send_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             string? recipientEmail = mail.Text;
             using var client = new SmtpClient(smtpServer, smptPort);
-            client.DeliveryMethod = SmtpDeliveryMethod.Network;
             client.UseDefaultCredentials = false;
+            client.EnableSsl = true;
+            client.Credentials = new NetworkCredential(senderEmail, senderPassword);
+            var mailMessage = new MailMessage()
+            {
+                From = new MailAddress(senderEmail, "A man from anywhere"),
+                Subject = "Just late",
+                Body = message.Text
+            };
+            mailMessage.To.Add(recipientEmail);
+            //  mailMessage.CC.Add("miri976y@gmail.com");
+
+            await client.SendMailAsync(mailMessage);
+            
+            MessageBox.Show("Sent succes");
         }
         catch (Exception ex)
         {

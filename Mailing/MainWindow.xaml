@@ -21,8 +21,13 @@
         </StackPanel>
 
 
-        <ListView Grid.Column="1">
-            
+        <ListView ItemsSource="{Binding Emails}" Grid.Column="1">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Subject" DisplayMemberBinding="{Binding subject}" />
+                    <GridViewColumn Header="Message" DisplayMemberBinding="{Binding message}" />
+                </GridView>
+            </ListView.View>
         </ListView>
 
         <StackPanel Grid.Column="2">
