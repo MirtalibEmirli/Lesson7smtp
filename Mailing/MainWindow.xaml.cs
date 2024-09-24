@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
 using System.Windows;
- 
+
 
 namespace Mailing;
 
@@ -23,12 +23,13 @@ public partial class MainWindow : Window
     string? recipientEmail;
     string smtpServer = "smtp.gmail.com";
     int smptPort = 587;
-    public ObservableCollection<EmailDto> Emails { get; set; } = new ObservableCollection<EmailDto>();
+    public ObservableCollection<EmailDto> Emails { get; set; }
 
     public MainWindow()
     {
         InitializeComponent();
         DataContext = this;
+        Emails = new();
     }
 
     private async void Delete_Click(object sender, RoutedEventArgs e)
@@ -38,22 +39,64 @@ public partial class MainWindow : Window
 
     }
 
-    private void Starred_Click(object sender, RoutedEventArgs e)
+    private async void Starred_Click(object sender, RoutedEventArgs e)
     {
-
-    }
-
-    private void Sent_Click(object sender, RoutedEventArgs e)
-    {
-
-    }
-
-    private void InBox_Click(object sender, RoutedEventArgs e)
-    {
-
          
 
     }
+
+    private async void Sent_Click(object sender, RoutedEventArgs e)
+    {
+        using (var imap = new ImapClient())
+        {
+            await imap.ConnectAsync("imap.gmail.com", 993, true);
+            await imap.AuthenticateAsync(senderEmail, senderPassword);
+           var sentFolder = await imap.GetFolderAsync("[Gmail]/Sent Mail");//problem var adi tapmaq olmur
+         
+          await sentFolder.OpenAsync(FolderAccess.ReadOnly);
+            var sentMails = await sentFolder.SearchAsync(SearchQuery.All);
+            Emails.Clear();
+            foreach (var mail in sentMails)
+            {
+
+            }
+        }
+    }
+
+    private async void inBox_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using (var imap = new ImapClient())
+            {
+                await imap.ConnectAsync("imap.gmail.com", 993, true);
+                await imap.AuthenticateAsync(senderEmail, senderPassword);
+                var inBox = imap.Inbox;
+                await inBox.OpenAsync(FolderAccess.ReadOnly);
+                var inMails = await inBox.SearchAsync(SearchQuery.All);
+                Emails.Clear();
+                foreach (var item in inMails)
+                {
+                    var msg = await inBox.GetMessageAsync(item);
+                    var email = new EmailDto
+                    {
+                        subject = msg.Subject.ToString() ?? "(No Subject)",
+                        message = msg.TextBody.ToString() ?? "(No Message)"
+                    };
+
+
+                    Emails.Add(email);
+                }
+
+                await imap.DisconnectAsync(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}");
+        }
+    }
+
 
     private async void Send_Click(object sender, RoutedEventArgs e)
     {
@@ -74,7 +117,7 @@ public partial class MainWindow : Window
             //  mailMessage.CC.Add("miri976y@gmail.com");
 
             await client.SendMailAsync(mailMessage);
-            
+
             MessageBox.Show("Sent succes");
         }
         catch (Exception ex)
@@ -87,5 +130,17 @@ public partial class MainWindow : Window
         }
 
 
+    }
+
+    private async void DeleteAll_Click(object sender, RoutedEventArgs e)
+    {
+        var imap = new ImapClient();
+        imap.Connect("imap.gmail.com", 993);
+        imap.Authenticate("mirtalibemirli498@gmail.com", "zbap yyys xtcs thpb");
+        var inBox = imap.GetFolder("inbox");
+        await inBox.OpenAsync(FolderAccess.ReadWrite);
+        var inMails = await inBox.SearchAsync(SearchQuery.All);
+        await inBox.SetFlagsAsync(inMails, MessageFlags.Deleted, true);
+        await inBox.ExpungeAsync();
     }
 }

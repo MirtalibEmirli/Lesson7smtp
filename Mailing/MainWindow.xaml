@@ -12,14 +12,13 @@
             <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+
         <StackPanel Grid.Column="0">
-            <Button Background="CadetBlue" Margin="5" Height="50" Content="Inbox" Name="InBox" Click="InBox_Click" />
+            <Button Background="CadetBlue" Margin="5" Height="50" Content="Inbox" Name="InBox" Click="inBox_Click" />
             <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Sent" Name="Sent" Click="Sent_Click" />
             <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Deleted" Name="Delete" Click="Delete_Click" />
             <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Starred" Name="Starred" Click="Starred_Click" />
-             
         </StackPanel>
-
 
         <ListView ItemsSource="{Binding Emails}" Grid.Column="1">
             <ListView.View>
@@ -35,7 +34,7 @@
             <TextBox x:Name="mail" Height="50"/>
             <Label Content="Message"/>
             <TextBox AcceptsReturn="True" TextWrapping="Wrap" x:Name="message" Height="448"/>
-            <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Send" Name="Send" Click="Send_Click"   />
+            <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Send" Name="Send" Click="Send_Click" />
         </StackPanel>
     </Grid>
 </Window>
