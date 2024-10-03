@@ -32,9 +32,13 @@
         <StackPanel Grid.Column="2">
             <Label Content="Mail"/>
             <TextBox x:Name="mail" Height="50"/>
+            <Label Content="Subject"/>
+            <TextBox x:Name="subject" Height="50"/>
+            <Label Content="Sender"/>
+            <TextBox x:Name="senderer" Height="50"/>
             <Label Content="Message"/>
-            <TextBox AcceptsReturn="True" TextWrapping="Wrap" x:Name="message" Height="448"/>
-            <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Send" Name="Send" Click="Send_Click" />
+            <TextBox AcceptsReturn="True" TextWrapping="Wrap" x:Name="message" Height="307"/>
+            <Button  Background="CadetBlue" Margin="5" Height="40"  Content="Send" Name="Send" Click="Send_Click" />
         </StackPanel>
     </Grid>
 </Window>

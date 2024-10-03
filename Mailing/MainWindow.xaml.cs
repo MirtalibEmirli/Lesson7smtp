@@ -12,9 +12,6 @@ using System.Windows;
 
 namespace Mailing;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
 public partial class MainWindow : Window
 {
 
@@ -41,7 +38,7 @@ public partial class MainWindow : Window
 
     private async void Starred_Click(object sender, RoutedEventArgs e)
     {
-         
+
 
     }
 
@@ -51,14 +48,20 @@ public partial class MainWindow : Window
         {
             await imap.ConnectAsync("imap.gmail.com", 993, true);
             await imap.AuthenticateAsync(senderEmail, senderPassword);
-           var sentFolder = await imap.GetFolderAsync("[Gmail]/Sent Mail");//problem var adi tapmaq olmur
-         
-          await sentFolder.OpenAsync(FolderAccess.ReadOnly);
+            var sentFolder = await imap.GetFolderAsync("[Gmail]/Sent Mail");//problem var adi tapmaq olmur
+
+            await sentFolder.OpenAsync(FolderAccess.ReadOnly);
             var sentMails = await sentFolder.SearchAsync(SearchQuery.All);
             Emails.Clear();
-            foreach (var mail in sentMails)
+            foreach (var id in sentMails)
             {
-
+                var msg = await sentFolder.GetMessageAsync(id);
+                var email = new EmailDto
+                {
+                    subject = msg != null ? msg.Subject.ToString() : "No Subject",
+                    message = msg != null ? msg.TextBody.ToString() : "No Subject",
+                };
+                Emails.Add(email);
             }
         }
     }
@@ -72,23 +75,32 @@ public partial class MainWindow : Window
                 await imap.ConnectAsync("imap.gmail.com", 993, true);
                 await imap.AuthenticateAsync(senderEmail, senderPassword);
                 var inBox = imap.Inbox;
+                if (InBox==null)
+                {
+                    throw new Exception("Inbox is null");
+
+                }
                 await inBox.OpenAsync(FolderAccess.ReadOnly);
                 var inMails = await inBox.SearchAsync(SearchQuery.All);
                 Emails.Clear();
                 foreach (var item in inMails)
                 {
                     var msg = await inBox.GetMessageAsync(item);
+
+                    if (msg == null)
+                    {
+                        throw new NullReferenceException("The message object (msg) is null");
+                    }
                     var email = new EmailDto
                     {
-                        subject = msg.Subject.ToString() ?? "(No Subject)",
-                        message = msg.TextBody.ToString() ?? "(No Message)"
+                        subject = msg != null ? msg.Subject.ToString() : "(No Subject)",
+                        message = msg != null&& msg.TextBody!=null ? msg.TextBody.ToString() : "(No Message)"
                     };
 
 
                     Emails.Add(email);
                 }
 
-                await imap.DisconnectAsync(true);
             }
         }
         catch (Exception ex)
@@ -104,13 +116,16 @@ public partial class MainWindow : Window
         {
             string? recipientEmail = mail.Text;
             using var client = new SmtpClient(smtpServer, smptPort);
+
             client.UseDefaultCredentials = false;
             client.EnableSsl = true;
             client.Credentials = new NetworkCredential(senderEmail, senderPassword);
+
             var mailMessage = new MailMessage()
             {
-                From = new MailAddress(senderEmail, "A man from anywhere"),
-                Subject = "Just late",
+                From = new MailAddress(senderEmail, senderer.Text!=null ? senderer.Text : "Nobody"),
+                Subject = subject.Text !=null ? subject.Text : "Just mail"
+               ,
                 Body = message.Text
             };
             mailMessage.To.Add(recipientEmail);
@@ -119,6 +134,10 @@ public partial class MainWindow : Window
             await client.SendMailAsync(mailMessage);
 
             MessageBox.Show("Sent succes");
+            senderer.Text = string.Empty;
+            message.Text = string.Empty;
+            subject.Text = string.Empty;
+            mail.Text = string.Empty;
         }
         catch (Exception ex)
         {
