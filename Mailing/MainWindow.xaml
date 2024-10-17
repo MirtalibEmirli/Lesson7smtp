@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mailing"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="1100">
+        Title="Mailing" Height="650" Width="1100">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -17,14 +17,15 @@
             <Button Background="CadetBlue" Margin="5" Height="50" Content="Inbox" Name="InBox" Click="inBox_Click" />
             <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Sent" Name="Sent" Click="Sent_Click" />
             <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Deleted" Name="Delete" Click="Delete_Click" />
-            <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Starred" Name="Starred" Click="Starred_Click" />
+            <Button  Background="CadetBlue" Margin="5" Height="50"  Content="Starred" Name="Starred" Click="Starred_Click"   />
+            <Button  Background="Red" Margin="5" Height="50"  Content="DeleteAll" Name="DeleteAll" Click="DeleteAll_Click"      />
         </StackPanel>
 
-        <ListView ItemsSource="{Binding Emails}" Grid.Column="1">
+        <ListView ItemsSource="{Binding Emails}" Grid.Column="1" SelectionChanged="ListView_SelectionChanged">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Subject" DisplayMemberBinding="{Binding subject}" />
-                    <GridViewColumn Header="Message" DisplayMemberBinding="{Binding message}" />
+                    <GridViewColumn Width="300" Header="Subject" DisplayMemberBinding="{Binding subject}" />
+                    <GridViewColumn Width="350" Header="Message" DisplayMemberBinding="{Binding message}" />
                 </GridView>
             </ListView.View>
         </ListView>

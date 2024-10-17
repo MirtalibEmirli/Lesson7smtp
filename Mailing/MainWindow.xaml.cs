@@ -29,42 +29,165 @@ public partial class MainWindow : Window
         Emails = new();
     }
 
+    private async void Starred_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using (var imap = new ImapClient())
+            {
+                await imap.ConnectAsync("imap.gmail.com", 993, true);
+                await imap.AuthenticateAsync(senderEmail, senderPassword);
+                var starred = await imap.GetFolderAsync("[Gmail]/Starred");
+                if (starred != null)
+                {
+                    await starred.OpenAsync(FolderAccess.ReadWrite);
+                    var mails = await starred.SearchAsync(SearchQuery.All);
+                    if (Emails == null)
+                    {
+                        Emails = new ObservableCollection<EmailDto>();
+                    }
+                    Emails.Clear();
+                    if (mails.Count == 0)
+                    {
+                        MessageBox.Show("No emails found in Starred.");
+                        return;
+                    }
+                    foreach (var id in mails)
+                    {
+
+                        var msg = await starred.GetMessageAsync(id);
+                        if (msg != null)
+                        {
+                            var email = new EmailDto
+                            {
+                                subject = msg.Subject != null ? msg.Subject.ToString() : "No Subject",
+                                message = msg.TextBody != null ? msg.TextBody.ToString() : "No Subject",
+                            };
+                            Emails.Add(email);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Message is null");
+                        }
+                    }
+
+
+                }
+                else
+                {
+                    MessageBox.Show("The Starred folder could not be found.");
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+
+            MessageBox.Show(ex.Message);
+        }
+    }
+
     private async void Delete_Click(object sender, RoutedEventArgs e)
     {
 
+        try
+        {
+            using (var imap = new ImapClient())
+            {
+                await imap.ConnectAsync("imap.gmail.com", 993, true);
+                await imap.AuthenticateAsync(senderEmail, senderPassword);
+                var deletedFolder = await imap.GetFolderAsync("[Gmail]/Trash");
+                if (deletedFolder != null)
+                {
+                    await deletedFolder.OpenAsync(FolderAccess.ReadWrite);
+                    var mails = await deletedFolder.SearchAsync(SearchQuery.All);
+                    if (Emails == null)
+                    {
+                        Emails = new ObservableCollection<EmailDto>();
+                    }
+                    Emails.Clear();
+                    if (mails.Count == 0)
+                    {
+                        MessageBox.Show("No emails found in Trash.");
+                        return;
+                    }
 
+
+
+                    foreach (var id in mails)
+                    {
+
+                        var msg = await deletedFolder.GetMessageAsync(id);
+                        if (msg != null)
+                        {
+                            var email = new EmailDto
+                            {
+                                subject = msg.Subject != null ? msg.Subject.ToString() : "No Subject",
+                                message = msg.TextBody != null ? msg.TextBody.ToString() : "No Subject",
+                            };
+                            Emails.Add(email);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Message is null");
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("The Trash folder could not be found.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}");
+        }
 
     }
 
-    private async void Starred_Click(object sender, RoutedEventArgs e)
-    {
 
 
-    }
+
 
     private async void Sent_Click(object sender, RoutedEventArgs e)
     {
-        using (var imap = new ImapClient())
+        try
         {
-            await imap.ConnectAsync("imap.gmail.com", 993, true);
-            await imap.AuthenticateAsync(senderEmail, senderPassword);
-            var sentFolder = await imap.GetFolderAsync("[Gmail]/Sent Mail");//problem var adi tapmaq olmur
-
-            await sentFolder.OpenAsync(FolderAccess.ReadOnly);
-            var sentMails = await sentFolder.SearchAsync(SearchQuery.All);
-            Emails.Clear();
-            foreach (var id in sentMails)
+            using (var imap = new ImapClient())
             {
-                var msg = await sentFolder.GetMessageAsync(id);
-                var email = new EmailDto
+                await imap.ConnectAsync("imap.gmail.com", 993, true);
+                await imap.AuthenticateAsync(senderEmail, senderPassword);
+                var sentFolder = await imap.GetFolderAsync("[Gmail]/Sent Mail");
+
+                await sentFolder.OpenAsync(FolderAccess.ReadOnly);
+                var sentMails = await sentFolder.SearchAsync(SearchQuery.All);
+                Emails.Clear();
+                if (sentMails.Count == 0)
                 {
-                    subject = msg != null ? msg.Subject.ToString() : "No Subject",
-                    message = msg != null ? msg.TextBody.ToString() : "No Subject",
-                };
-                Emails.Add(email);
+                    MessageBox.Show("No emails found in Trash.");
+                    return;
+                }
+                foreach (var id in sentMails)
+                {
+                    var msg = await sentFolder.GetMessageAsync(id);
+                    var email = new EmailDto
+                    {
+                        subject = msg != null ? msg.Subject.ToString() : "No Subject",
+                        message = msg != null ? msg.TextBody.ToString() : "No Subject",
+                    };
+                    Emails.Add(email);
+                }
             }
         }
+        catch (Exception)
+        {
+
+            throw;
+        }
+
     }
+
 
     private async void inBox_Click(object sender, RoutedEventArgs e)
     {
@@ -75,7 +198,7 @@ public partial class MainWindow : Window
                 await imap.ConnectAsync("imap.gmail.com", 993, true);
                 await imap.AuthenticateAsync(senderEmail, senderPassword);
                 var inBox = imap.Inbox;
-                if (InBox==null)
+                if (InBox == null)
                 {
                     throw new Exception("Inbox is null");
 
@@ -83,6 +206,11 @@ public partial class MainWindow : Window
                 await inBox.OpenAsync(FolderAccess.ReadOnly);
                 var inMails = await inBox.SearchAsync(SearchQuery.All);
                 Emails.Clear();
+                if (inMails.Count == 0)
+                {
+                    MessageBox.Show("No emails found in inbox.");
+                    return;
+                }
                 foreach (var item in inMails)
                 {
                     var msg = await inBox.GetMessageAsync(item);
@@ -94,7 +222,7 @@ public partial class MainWindow : Window
                     var email = new EmailDto
                     {
                         subject = msg != null ? msg.Subject.ToString() : "(No Subject)",
-                        message = msg != null&& msg.TextBody!=null ? msg.TextBody.ToString() : "(No Message)"
+                        message = msg != null && msg.TextBody != null ? msg.TextBody.ToString() : "(No Message)"
                     };
 
 
@@ -123,8 +251,8 @@ public partial class MainWindow : Window
 
             var mailMessage = new MailMessage()
             {
-                From = new MailAddress(senderEmail, senderer.Text!=null ? senderer.Text : "Nobody"),
-                Subject = subject.Text !=null ? subject.Text : "Just mail"
+                From = new MailAddress(senderEmail, senderer.Text != null ? senderer.Text : "Nobody"),
+                Subject = subject.Text != null ? subject.Text : "Just mail"
                ,
                 Body = message.Text
             };
@@ -151,15 +279,29 @@ public partial class MainWindow : Window
 
     }
 
+
+
     private async void DeleteAll_Click(object sender, RoutedEventArgs e)
     {
-        var imap = new ImapClient();
-        imap.Connect("imap.gmail.com", 993);
-        imap.Authenticate("mirtalibemirli498@gmail.com", "zbap yyys xtcs thpb");
-        var inBox = imap.GetFolder("inbox");
-        await inBox.OpenAsync(FolderAccess.ReadWrite);
-        var inMails = await inBox.SearchAsync(SearchQuery.All);
-        await inBox.SetFlagsAsync(inMails, MessageFlags.Deleted, true);
-        await inBox.ExpungeAsync();
+        var result = MessageBox.Show("Do you wanna delete all mails?", "Diqqetttt", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel);
+        if (result == MessageBoxResult.OK)
+        {
+            var imap = new ImapClient();
+            imap.Connect("imap.gmail.com", 993);
+            imap.Authenticate("mirtalibemirli498@gmail.com", "zbap yyys xtcs thpb");
+            var inBox = imap.GetFolder("inbox");
+            await inBox.OpenAsync(FolderAccess.ReadWrite);
+            var inMails = await inBox.SearchAsync(SearchQuery.All);
+            await inBox.SetFlagsAsync(inMails, MessageFlags.Deleted, true);
+            await inBox.ExpungeAsync();
+            Emails.Clear();
+        }
+
+
+    }
+
+    private void ListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+
     }
 }
